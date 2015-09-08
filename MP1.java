@@ -4,6 +4,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
+
+
 public class MP1 {
     Random generator;
     String userName;
@@ -19,7 +21,10 @@ public class MP1 {
             "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each",
             "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than",
             "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"};
-    HashMap<String,Integer> map;
+    HashMap<String,Integer> wordCnt;
+    HashSet<String> wordSet;
+    HashMap<Integer, Integer> lineMap;
+    
 
     void initialRandomGenerator(String seed) throws NoSuchAlgorithmException {
         MessageDigest messageDigest = MessageDigest.getInstance("SHA");
@@ -48,34 +53,93 @@ public class MP1 {
     public MP1(String userName, String inputFileName) {
         this.userName = userName;
         this.inputFileName = inputFileName;
+        wordSet = new HashSet<String>();
+        for (String e:stopWordsArray) {
+            wordSet.add(e);
+        }
+
+        
     }
+    
+    static final Comparator<Map.Entry<String, Integer>> entry_compare = new Comparator<Map.Entry<String, Integer>>() {
+        public int compare(Map.Entry<String, Integer> a, Map.Entry<String, Integer> b) {
+            if (a.getValue() != b.getValue())
+                return b.getValue() - a.getValue();
+            
+            return a.getKey().compareTo(b.getKey());
+        }
+        
+    };
+
 
     public String[] process() throws Exception {
         String[] ret = new String[20];
-       
+        
         //TODO
-        map = new HashMap<String,Integer>();
+        Integer[] index = getIndexes();
+        lineMap = new HashMap<Integer, Integer>();
+
+        Integer cnt = null;
+        for (Integer i:index) {
+            cnt = lineMap.get(i);
+            if (cnt == null) {
+                lineMap.put(i, 1);
+            } else {
+                lineMap.put(i, cnt+1);
+            }
+        }
+        
+        wordCnt = new HashMap<String,Integer>();
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(this.inputFileName)));
-        int line_num = 0;
+        int line_num = -1;
+        Integer line_cnt = null;
         String data = null;
         
         while ((data = br.readLine()) != null) {
+            line_num++;
+            line_cnt = lineMap.get(line_num);
+            
+            if (line_cnt == null)
+                continue;
+
             if (data.trim().equals(""))
                 continue;
+
             data = data.toLowerCase();
             StringTokenizer st = new StringTokenizer(data, delimiters);
             while (st.hasMoreTokens()) {
                 String key = st.nextToken();
-                if (key != null)
-                    System.out.println(key);
+                if (key != null && !wordSet.contains(key)) {
+                    cnt = wordCnt.get(key);
+                    if (cnt == null) {
+                        wordCnt.put(key, line_cnt);
+                    } else {
+                        wordCnt.put(key, cnt+line_cnt);
+                    }
+                }
+                    
             }
+
         }
-        Iterator<Map.Entry<String, Integer>> iter = map.entrySet().iterator();
+        //System.out.println(line_num+ " map:"+wordCnt.size());
+        br.close();
+        
+        PriorityQueue<Map.Entry<String, Integer>> heap = new PriorityQueue<Map.Entry<String, Integer>>(20, entry_compare);
+        Iterator<Map.Entry<String, Integer>> iter = wordCnt.entrySet().iterator();
 
         Map.Entry<String, Integer> entry;
 
         while (iter.hasNext()) {
             entry = iter.next();
+            heap.add(entry);
+        }
+        
+        int idx = 0;
+        
+        while (!heap.isEmpty() && idx < 20) {
+            entry = heap.poll();
+            ret[idx++] = entry.getKey();
+            //System.out.println(entry.getKey() + " " + entry.getValue());
         }
         
 

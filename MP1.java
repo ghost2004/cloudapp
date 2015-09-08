@@ -1,4 +1,4 @@
-import java.io.File;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -19,6 +19,7 @@ public class MP1 {
             "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each",
             "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than",
             "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"};
+    HashMap<String,Integer> map;
 
     void initialRandomGenerator(String seed) throws NoSuchAlgorithmException {
         MessageDigest messageDigest = MessageDigest.getInstance("SHA");
@@ -53,6 +54,30 @@ public class MP1 {
         String[] ret = new String[20];
        
         //TODO
+        map = new HashMap<String,Integer>();
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(this.inputFileName)));
+        int line_num = 0;
+        String data = null;
+        
+        while ((data = br.readLine()) != null) {
+            if (data.trim().equals(""))
+                continue;
+            data = data.toLowerCase();
+            StringTokenizer st = new StringTokenizer(data, delimiters);
+            while (st.hasMoreTokens()) {
+                String key = st.nextToken();
+                if (key != null)
+                    System.out.println(key);
+            }
+        }
+        Iterator<Map.Entry<String, Integer>> iter = map.entrySet().iterator();
+
+        Map.Entry<String, Integer> entry;
+
+        while (iter.hasNext()) {
+            entry = iter.next();
+        }
+        
 
         return ret;
     }
